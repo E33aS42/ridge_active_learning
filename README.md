@@ -2,7 +2,7 @@
 A short program to learn different types of regularization techniques.
 
 # Introduction
-This project aimed to implement different techniques of regularization given an arbitrary input setting of regulariation parameter:
+This project aimed to implement different techniques of regularization given an arbitrary input setting of regulariation parameters:
 
 - l2-regularized least squares linear regression (Ridge regression).
 

@@ -4,9 +4,9 @@ import copy
 
 """
 This script should be launched from the console using the following line:
-python reg.py lambda sigma2 X_train y_train X_test
+  >  python reg.py lambda sigma2 X_train y_train X_test
 Where:
-. regul_reg.py is the name of this python file
+. reg.py is the name of this python file
 . lambda is a regularization parameter.
 . sigma2 is the variance.
 
@@ -19,7 +19,7 @@ to the nodes in the X_train file
 
 ## Preprocessing
 # The data has to be standardized to avoid too much disparities (small and big values) 
-# between data points and avoiding as scuh each output to be penalized differently.
+# between data points and avoiding as such each output to be penalized differently.
 
 def standardize(X):
     shaX = np.shape(X)
@@ -123,15 +123,9 @@ def AL(X, y, lamb, sigm, X_0):
     print('size(X_0) = {}'.format(np.shape(X_0)))
     print('size(Sigma) = {}'.format(np.shape(Sigma)))
     prod4 = np.dot(Sigma, np.transpose(X_0))
-    # print('prod4 = {}'.format(prod4))
     sigm_0 = sigm + np.dot(X_0, prod4)
     # print('sigm_0 = %s'% sigm_0)
 
-    #Sigma_0 = np.linalg.inv(np.linalg.inv(Sigma) + 1/sigm*np.dot(np.transpose(X_0), X_0))
-    # print('Sigma_0 = %s' % Sigma_0)
-
-    mu_0 = np.dot(X_0,mu)
-    # print('mu_0 = %s'% mu_0)
     shasig = np.shape(sigm_0)
     sigma0 = np.zeros((shasig[0],1))
     for i in range(shasig[0]):
@@ -161,18 +155,47 @@ def AL(X, y, lamb, sigm, X_0):
 
     return index
 
+def isfloat(num):
+    try:
+        float(num)
+        return True
+    except ValueError:
+        return False
+
+
 if __name__ == "__main__":
-    lambda_input = int(sys.argv[1])
-    sigma2_input = float(sys.argv[2])
-    X_train = np.genfromtxt(sys.argv[3], delimiter=",")
-    y_train = np.genfromtxt(sys.argv[4])
-    X_test = np.genfromtxt(sys.argv[5], delimiter=",")
-    x, y, x_0 = preprocessing(X_train, y_train, X_test)
-    
-    # Ridge regression
-    wRR = RR(x, y, lambda_input)  # Assuming wRR is returned from the function
-    np.savetxt("wRR_" + str(lambda_input) + ".csv", wRR, delimiter="\n") # write output to file
-    
-    # Active learning
-    active = AL(x, y, lambda_input, sigma2_input, x_0)  # Assuming active is returned from the function
-    np.savetxt("active_" + str(lambda_input) + "_" + str(int(sigma2_input)) + ".csv", active, delimiter=",") # write output to file
+    try:
+        assert len(sys.argv) > 5, "There should be 5 arguments in that order:\n" \
+        "1st argument lambda is a positive int\n" \
+        "2nd argument sigma is a positive int or float\n" \
+        "3rd argument X_train is a path to a .txt or .csv file\n" \
+        "4th argument y_train is a path to a .txt or .csv file\n" \
+        "5th argument X_test is a path to a .txt or .csv file\n"
+        assert sys.argv[1].isdigit() and int(sys.argv[1]) > 0, "1st argument lambda is a positive int" 
+        assert isfloat(sys.argv[2]) and float(sys.argv[2]) > 0, "2nd argument sigma is a positive int or float"
+
+        lambda_input = int(sys.argv[1])
+        sigma2_input = float(sys.argv[2])
+        X_train = np.genfromtxt(sys.argv[3], delimiter=",")
+        y_train = np.genfromtxt(sys.argv[4])
+        X_test = np.genfromtxt(sys.argv[5], delimiter=",")
+        x, y, x_0 = preprocessing(X_train, y_train, X_test)
+        
+        # Ridge regression
+        wRR = RR(x, y, lambda_input)  # Assuming wRR is returned from the function
+        np.savetxt("wRR_" + str(lambda_input) + ".csv", wRR, delimiter="\n") # write output to file
+        
+        # Lasso
+        lasso = Lasso(x, y, lambda_input)
+        np.savetxt("lasso_" + str(lambda_input) + ".csv", lasso, delimiter="\n") # write output to file
+
+        # Elastic Net
+        ElN = El_net(x, y, lambda_input, lambda_input + 1)
+        np.savetxt("ElN_" + str(lambda_input) + "_" + str(lambda_input + 1) + ".csv", ElN, delimiter=",") # write output to file
+
+        # Active learning
+        active = AL(x, y, lambda_input, sigma2_input, x_0)  # Assuming active is returned from the function
+        np.savetxt("active_" + str(lambda_input) + "_" + str(int(sigma2_input)) + ".csv", active, delimiter=",") # write output to file
+
+    except Exception as e:
+        print(e)

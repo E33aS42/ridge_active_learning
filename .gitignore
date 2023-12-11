@@ -162,3 +162,5 @@ cython_debug/
 # useless files
 wRR*.csv
 act*.csv
+El*.csv
+la*.csv
